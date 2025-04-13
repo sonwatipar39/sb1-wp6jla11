@@ -1,7 +1,26 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.PROD 
-  ? window.location.origin
-  : 'http://localhost:3000';
+// Create socket instance using relative path to leverage Vite proxy
+export const socket = io('/', {
+  autoConnect: false,
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+});
 
-export const socket = io(SOCKET_URL);
+// Add socket event listeners for debugging
+socket.on('connect', () => {
+  console.log('Socket connected');
+});
+
+socket.on('disconnect', () => {
+  console.log('Socket disconnected');
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Socket connection error:', error);
+});
+
+socket.on('error', (error) => {
+  console.error('Socket error:', error);
+});
