@@ -16,20 +16,30 @@ function AdminPanel() {
   const [sessions, setSessions] = useState<PaymentSession[]>([]);
 
   useEffect(() => {
-    socket.connect();
+    // Ensure socket is connected
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-    socket.on('new_payment', (data) => {
+    // Handler for new payments
+    const handleNewPayment = (data: PaymentSession) => {
+      console.log('New payment received:', data);
       setSessions(prev => [...prev, data]);
-    });
+    };
 
+    // Add event listener
+    socket.on('new_payment', handleNewPayment);
+
+    // Cleanup function
     return () => {
-      socket.off('new_payment');
-      socket.disconnect();
+      socket.off('new_payment', handleNewPayment);
     };
   }, []);
 
   const handleAction = (action: string, sessionId: string) => {
+    console.log('Sending action:', action, 'for session:', sessionId);
     socket.emit('admin_action', { action, sessionId });
+    
     if (action === 'success' || action === 'fail') {
       setSessions(prev => prev.filter(session => session.sessionId !== sessionId));
     }
